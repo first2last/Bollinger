@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+// FIXED: Import the LineType enum from the library
 import { init, dispose, Chart as KChart, LineType } from 'klinecharts';
 import { TrendingUp, Settings2 } from 'lucide-react';
 import { BollingerSettings } from './BollingerSettings';
@@ -18,7 +19,6 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [bollingerData, setBollingerData] = useState<BollingerBandsData[]>([]);
 
-  // Default settings matching assignment requirements
   const [settings, setSettings] = useState<BollingerBandsSettings>({
     length: 20,
     maType: 'SMA',
@@ -27,7 +27,6 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     offset: 0
   });
 
-  // Default style settings
   const [style, setStyle] = useState<BollingerBandsStyle>({
     basic: {
       visible: true,
@@ -54,13 +53,11 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     }
   });
 
-  // Initialize chart
   useEffect(() => {
     if (!chartRef.current) return;
 
     chartInstance.current = init(chartRef.current, {
       candle: {
-        // FIXED: This property must be lowercase.
         type: 'candle_solid',
         bar: {
           upColor: '#26a69a',
@@ -73,7 +70,6 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           custom: [
             {
               title: 'Bollinger Bands',
-              // FIXED: Replaced 'any' with a specific type for better type safety.
               format: (data: { kLineData: OHLCV; dataIndex: number }) => {
                 if (!showBollinger || !bollingerData.length) return '';
                 
@@ -107,8 +103,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           show: true,
           line: {
             show: true,
-            // FIXED: 'dashed' must be uppercase.
-            style: 'DASHED',
+            // FIXED: Use the LineType enum
+            style: LineType.Dashed,
             dashedValue: [4, 2],
             size: 1,
             color: '#EDEDED'
@@ -118,8 +114,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           show: true,
           line: {
             show: true,
-            // FIXED: 'dashed' must be uppercase.
-            style: 'DASHED',
+            // FIXED: Use the LineType enum
+            style: LineType.Dashed,
             dashedValue: [4, 2],
             size: 1,
             color: '#EDEDED'
@@ -133,13 +129,15 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
             show: true,
             size: 1,
             color: '#393939',
-            style: 'SOLID'
+            // FIXED: Use the LineType enum
+            style: LineType.Solid
           },
           vertical: {
             show: true,
             size: 1,
             color: '#393939',
-            style: 'SOLID'
+            // FIXED: Use the LineType enum
+            style: LineType.Solid
           }
         }
       }
@@ -153,7 +151,6 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     };
   }, []);
 
-  // Load candlestick data
   useEffect(() => {
     if (chartInstance.current && data.length > 0) {
       const formattedData = data.map(candle => ({
@@ -164,83 +161,60 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
         close: candle.close,
         volume: candle.volume
       }));
-
       chartInstance.current.applyNewData(formattedData);
     }
   }, [data]);
 
-  // Compute Bollinger Bands when settings change
   const updateBollingerBands = useCallback(() => {
     if (data.length > 0) {
       const bb = computeBollingerBands(data, settings);
       setBollingerData(bb);
-      return bb;
     }
-    return [];
   }, [data, settings]);
 
   useEffect(() => {
     updateBollingerBands();
   }, [updateBollingerBands]);
 
-
-
-  // Update chart with Bollinger Bands overlay
   useEffect(() => {
-    if (!chartInstance.current) return;
+    if (!chartInstance.current || !showBollinger) return;
 
-    if (!showBollinger) {
-      try {
-        chartInstance.current.removeIndicator('BOLL');
-      } catch (e) { /* Indicator might not exist, that's okay */ }
-      return;
-    }
+    chartInstance.current.removeIndicator('BOLL');
+    const indicatorId = chartInstance.current.createIndicator('BOLL', true, { id: 'candle_pane' });
 
-    try {
-      chartInstance.current.removeIndicator('BOLL');
-      
-      const indicatorId = chartInstance.current.createIndicator(
-        'BOLL', 
-        true,
-        { id: 'candle_pane' }
-      );
-
-      if (indicatorId) {
-        chartInstance.current.overrideIndicator({
-          name: 'BOLL',
-          calcParams: [settings.length, settings.stdDevMultiplier],
-          styles: {
-            up: {
-              color: style.upper.color,
-              size: style.upper.lineWidth,
-              // FIXED: Output must be uppercase 'DASHED' or 'SOLID' for the library.
-              style: (style.upper.lineStyle === 'dashed' ? 'DASHED' : 'SOLID') as LineType,
-              show: style.upper.visible
-            },
-            mid: {
-              color: style.basic.color,
-              size: style.basic.lineWidth,
-              style: (style.basic.lineStyle === 'dashed' ? 'DASHED' : 'SOLID') as LineType,
-              show: style.basic.visible
-            },
-            dn: {
-              color: style.lower.color,
-              size: style.lower.lineWidth,
-              style: (style.lower.lineStyle === 'dashed' ? 'DASHED' : 'SOLID') as LineType,
-              show: style.lower.visible
-            }
+    if (indicatorId) {
+      chartInstance.current.overrideIndicator({
+        name: 'BOLL',
+        calcParams: [settings.length, settings.stdDevMultiplier],
+        styles: {
+          up: {
+            color: style.upper.color,
+            size: style.upper.lineWidth,
+            // FIXED: Use the LineType enum in the logic
+            style: style.upper.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid,
+            show: style.upper.visible
+          },
+          mid: {
+            color: style.basic.color,
+            size: style.basic.lineWidth,
+            style: style.basic.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid,
+            show: style.basic.visible
+          },
+          dn: {
+            color: style.lower.color,
+            size: style.lower.lineWidth,
+            style: style.lower.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid,
+            show: style.lower.visible
           }
-        });
-      }
-
-    } catch (error) {
-      console.error('Error adding Bollinger Bands indicator:', error);
+        }
+      });
     }
-
-  }, [showBollinger, settings, style]);
+  }, [showBollinger, settings, style, bollingerData]);
 
   const handleAddIndicator = () => {
-    setShowBollinger(true);
+    if (!showBollinger) {
+      setShowBollinger(true);
+    }
   };
 
   const handleShowSettings = () => {
