@@ -59,21 +59,7 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     if (!chartRef.current) return;
 
     chartInstance.current = init(chartRef.current, {
-      grid: {
-        show: true,
-        horizontal: {
-          show: true,
-          size: 1,
-          color: '#333',
-          style: 'solid'
-        },
-        vertical: {
-          show: true,
-          size: 1,
-          color: '#333',
-          style: 'solid'
-        }
-      },
+      // NOTE: The incorrect top-level 'grid' object has been removed.
       candle: {
         type: 'candle_solid',
         bar: {
@@ -137,13 +123,21 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           }
         }
       },
+      // FIXED: All grid settings are now correctly placed inside the 'styles' object.
       styles: {
         grid: {
+          show: true,
           horizontal: {
-            color: '#393939'
+            show: true,
+            size: 1,
+            color: '#393939', // Merged color
+            style: 'solid'
           },
           vertical: {
-            color: '#393939'
+            show: true,
+            size: 1,
+            color: '#393939', // Merged color
+            style: 'solid'
           }
         }
       }
