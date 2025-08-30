@@ -59,83 +59,103 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     if (!chartRef.current) return;
 
     chartInstance.current = init(chartRef.current, {
-      candle: {
-        type: 'candle_solid',
-        bar: {
-          upColor: '#26a69a',
-          downColor: '#ef5350',
-          noChangeColor: '#888888'
-        },
-        tooltip: {
-          showRule: 'always',
-          showType: 'standard',
-          custom: [
-            {
-              title: 'Bollinger Bands',
-              format: (data: { kLineData: OHLCV; dataIndex: number }) => {
-                if (!showBollinger || !bollingerData.length) return '';
-                
-                const index = data.dataIndex;
-                if (index >= 0 && index < bollingerData.length) {
-                  const bb = bollingerData[index];
-                  if (bb && !isNaN(bb.basis) && !isNaN(bb.upper) && !isNaN(bb.lower)) {
-                    return [
-                      { title: 'Upper', value: bb.upper.toFixed(2) },
-                      { title: 'Basis', value: bb.basis.toFixed(2) },
-                      { title: 'Lower', value: bb.lower.toFixed(2) }
-                    ];
-                  }
-                }
-                return [];
-              }
-            }
-          ]
-        }
-      },
-      xAxis: {
-        type: 'time'
-      },
-      yAxis: {
-        type: 'normal',
-        position: 'right'
-      },
-      crosshair: {
-        show: true,
-        horizontal: {
-          show: true,
-          line: {
-            show: true,
-            style: LineType.Dashed, // Fixed: Changed from 'DASHED'
-            dashedValue: [4, 2],
-            size: 1,
-            color: '#EDEDED'
+      layout: [
+        {
+          type: 'candle',
+          content: [],
+          options: {
+            id: 'candle_pane',
+            height: 400,
+            minHeight: 200,
+            dragEnabled: true
           }
         },
-        vertical: {
-          show: true,
-          line: {
-            show: true,
-            style: LineType.Dashed, // Fixed: Changed from 'DASHED'
-            dashedValue: [4, 2],
-            size: 1,
-            color: '#EDEDED'
+        {
+          type: 'xAxis',
+          content: [],
+          options: {
+            id: 'xAxis_pane',
+            height: 50
           }
         }
-      },
+      ],
       styles: {
+        candle: {
+          type: 'candle_solid',
+          bar: {
+            upColor: '#26a69a',
+            downColor: '#ef5350',
+            noChangeColor: '#888888'
+          },
+          tooltip: {
+            showRule: 'always',
+            showType: 'standard',
+            custom: [
+              {
+                title: 'Bollinger Bands',
+                format: (data: { kLineData: OHLCV; dataIndex: number }) => {
+                  if (!showBollinger || !bollingerData.length) return '';
+                  
+                  const index = data.dataIndex;
+                  if (index >= 0 && index < bollingerData.length) {
+                    const bb = bollingerData[index];
+                    if (bb && !isNaN(bb.basis) && !isNaN(bb.upper) && !isNaN(bb.lower)) {
+                      return [
+                        { title: 'Upper', value: bb.upper.toFixed(2) },
+                        { title: 'Basis', value: bb.basis.toFixed(2) },
+                        { title: 'Lower', value: bb.lower.toFixed(2) }
+                      ];
+                    }
+                  }
+                  return [];
+                }
+              }
+            ]
+          }
+        },
+        xAxis: {
+          type: 'time'
+        },
+        yAxis: {
+          type: 'normal',
+          position: 'right'
+        },
+        crosshair: {
+          show: true,
+          horizontal: {
+            show: true,
+            line: {
+              show: true,
+              style: LineType.Dashed,
+              dashedValue: [4, 2],
+              size: 1,
+              color: '#EDEDED'
+            }
+          },
+          vertical: {
+            show: true,
+            line: {
+              show: true,
+              style: LineType.Dashed,
+              dashedValue: [4, 2],
+              size: 1,
+              color: '#EDEDED'
+            }
+          }
+        },
         grid: {
           show: true,
           horizontal: {
             show: true,
             size: 1,
             color: '#393939',
-            style: LineType.Solid // Fixed: Changed from 'SOLID'
+            style: LineType.Solid
           },
           vertical: {
             show: true,
             size: 1,
             color: '#393939',
-            style: LineType.Solid // Fixed: Changed from 'SOLID'
+            style: LineType.Solid
           }
         }
       }
