@@ -58,27 +58,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
   useEffect(() => {
     if (!chartRef.current) return;
 
+    // Using the simpler initialization approach
     chartInstance.current = init(chartRef.current, {
-      layout: [
-        {
-          type: 'candle',
-          content: [],
-          options: {
-            id: 'candle_pane',
-            height: 400,
-            minHeight: 200,
-            dragEnabled: true
-          }
-        },
-        {
-          type: 'xAxis',
-          content: [],
-          options: {
-            id: 'xAxis_pane',
-            height: 50
-          }
-        }
-      ],
       styles: {
         candle: {
           type: 'candle_solid',
