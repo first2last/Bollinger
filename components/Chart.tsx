@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { init, dispose, Chart as KChart } from 'klinecharts';
+import { init, dispose, Chart as KChart, CandleType, LineType } from 'klinecharts';
 import { TrendingUp, Settings2 } from 'lucide-react';
 import { BollingerSettings } from './BollingerSettings';
 import { computeBollingerBands } from '@/lib/indicators/bollinger';
@@ -18,7 +18,7 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [bollingerData, setBollingerData] = useState<BollingerBandsData[]>([]);
 
-  // Default settings matching assignment requirements
+  // Default settings
   const [settings, setSettings] = useState<BollingerBandsSettings>({
     length: 20,
     maType: 'SMA',
@@ -29,29 +29,10 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
 
   // Default style settings
   const [style, setStyle] = useState<BollingerBandsStyle>({
-    basic: {
-      visible: true,
-      color: '#FF6B35',
-      lineWidth: 2,
-      lineStyle: 'solid'
-    },
-    upper: {
-      visible: true,
-      color: '#4ECDC4',
-      lineWidth: 1,
-      lineStyle: 'solid'
-    },
-    lower: {
-      visible: true,
-      color: '#4ECDC4',
-      lineWidth: 1,
-      lineStyle: 'solid'
-    },
-    backgroundFill: {
-      visible: true,
-      opacity: 0.1,
-      color: '#4ECDC4'
-    }
+    basic: { visible: true, color: '#FF6B35', lineWidth: 2, lineStyle: 'solid' },
+    upper: { visible: true, color: '#4ECDC4', lineWidth: 1, lineStyle: 'solid' },
+    lower: { visible: true, color: '#4ECDC4', lineWidth: 1, lineStyle: 'solid' },
+    backgroundFill: { visible: true, opacity: 0.1, color: '#4ECDC4' }
   });
 
   // Initialize chart
@@ -61,7 +42,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     chartInstance.current = init(chartRef.current, {
       styles: {
         candle: {
-          type: 'candle_solid',
+          // enum, not string
+          type: CandleType.CandleSolid,
           bar: {
             upColor: '#26a69a',
             downColor: '#ef5350',
@@ -73,16 +55,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           },
           priceMark: {
             show: true,
-            high: {
-              show: true,
-              color: '#D9D9D9',
-              textMargin: 5
-            },
-            low: {
-              show: true,
-              color: '#D9D9D9',
-              textMargin: 5
-            }
+            high: { show: true, color: '#D9D9D9', textMargin: 5 },
+            low: { show: true, color: '#D9D9D9', textMargin: 5 }
           },
           tooltip: {
             showRule: 'always',
@@ -97,56 +71,31 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
             show: true,
             size: 1,
             color: '#393939',
-            style: 'solid'
+            // enum, not string
+            style: LineType.Solid
           },
           vertical: {
             show: true,
             size: 1,
             color: '#393939',
-            style: 'solid'
+            style: LineType.Solid
           }
         },
         xAxis: {
           show: true,
           size: 'auto',
-          axisLine: {
-            show: true,
-            color: '#888888',
-            size: 1
-          },
-          tickText: {
-            show: true,
-            color: '#D9D9D9',
-            size: 12
-          },
-          tickLine: {
-            show: true,
-            size: 1,
-            length: 3,
-            color: '#888888'
-          }
+          axisLine: { show: true, color: '#888888', size: 1 },
+          tickText: { show: true, color: '#D9D9D9', size: 12 },
+          tickLine: { show: true, size: 1, length: 3, color: '#888888' }
         },
         yAxis: {
           show: true,
           size: 'auto',
           position: 'right',
           type: 'normal',
-          axisLine: {
-            show: true,
-            color: '#888888',
-            size: 1
-          },
-          tickText: {
-            show: true,
-            color: '#D9D9D9',
-            size: 12
-          },
-          tickLine: {
-            show: true,
-            size: 1,
-            length: 3,
-            color: '#888888'
-          }
+          axisLine: { show: true, color: '#888888', size: 1 },
+          tickText: { show: true, color: '#D9D9D9', size: 12 },
+          tickLine: { show: true, size: 1, length: 3, color: '#888888' }
         },
         crosshair: {
           show: true,
@@ -154,8 +103,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
             show: true,
             line: {
               show: true,
-              style: 'dashed',
-              dashValue: [4, 2],
+              style: LineType.Dashed,         // enum
+              dashedValue: [4, 2],            // correct prop name
               size: 1,
               color: '#888888'
             },
@@ -176,8 +125,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
             show: true,
             line: {
               show: true,
-              style: 'dashed',
-              dashValue: [4, 2],
+              style: LineType.Dashed,         // enum
+              dashedValue: [4, 2],
               size: 1,
               color: '#888888'
             },
@@ -197,19 +146,24 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
         }
       },
       customApi: {
-        formatDate: (dateTimeFormat: any, timestamp: number, format: string, type: string) => {
+        // keep simple; if lint complains about 'any', switch your ESLint rule or add a local ts-ignore
+        formatDate: (_fmt: any, timestamp: number, _format: string, type: string) => {
           const date = new Date(timestamp);
           if (type === 'time') {
-            return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+            return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
           }
-          return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+            date.getDate()
+          ).padStart(2, '0')}`;
         }
       }
     });
 
     return () => {
       if (chartInstance.current) {
-        dispose(chartRef.current!);
+        // capture the ref for cleanup to avoid the React hook warning
+        const dom = chartRef.current!;
+        dispose(dom);
         chartInstance.current = null;
       }
     };
@@ -218,15 +172,14 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
   // Load candlestick data
   useEffect(() => {
     if (chartInstance.current && data.length > 0) {
-      const formattedData = data.map(candle => ({
-        timestamp: candle.timestamp,
-        open: candle.open,
-        high: candle.high,
-        low: candle.low,
-        close: candle.close,
-        volume: candle.volume
+      const formattedData = data.map((c) => ({
+        timestamp: c.timestamp,
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+        volume: c.volume
       }));
-
       chartInstance.current.applyNewData(formattedData);
     }
   }, [data]);
@@ -252,81 +205,57 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     if (!showBollinger) {
       try {
         chartInstance.current.removeIndicator('BOLL');
-      } catch (e) { 
-        // Indicator might not exist, that's okay
+      } catch {
+        /* no-op */
       }
       return;
     }
 
     try {
-      // Remove existing indicator if present
       try {
         chartInstance.current.removeIndicator('BOLL');
-      } catch (e) {
-        // Indicator might not exist
+      } catch {
+        /* indicator might not exist */
       }
-      
-      // Create the Bollinger Bands indicator
-      const indicatorId = chartInstance.current.createIndicator(
-        'BOLL', 
-        true,
-        { id: 'candle_pane' }
-      );
+
+      const indicatorId = chartInstance.current.createIndicator('BOLL', true, { id: 'candle_pane' });
 
       if (indicatorId) {
-        // Override indicator styles
         chartInstance.current.overrideIndicator({
           name: 'BOLL',
           calcParams: [settings.length, settings.stdDevMultiplier],
           styles: {
-            lines: [
-              {
-                color: style.upper.color,
-                size: style.upper.lineWidth,
-                style: style.upper.lineStyle === 'dashed' ? 'dashed' : 'solid',
-                show: style.upper.visible,
-                dashValue: style.upper.lineStyle === 'dashed' ? [4, 4] : [0, 0]
-              },
-              {
-                color: style.basic.color,
-                size: style.basic.lineWidth,
-                style: style.basic.lineStyle === 'dashed' ? 'dashed' : 'solid',
-                show: style.basic.visible,
-                dashValue: style.basic.lineStyle === 'dashed' ? [4, 4] : [0, 0]
-              },
-              {
-                color: style.lower.color,
-                size: style.lower.lineWidth,
-                style: style.lower.lineStyle === 'dashed' ? 'dashed' : 'solid',
-                show: style.lower.visible,
-                dashValue: style.lower.lineStyle === 'dashed' ? [4, 4] : [0, 0]
-              }
-            ]
+            // use individual up/mid/dn configs expected by klinecharts
+            up: {
+              color: style.upper.color,
+              size: style.upper.lineWidth,
+              style: style.upper.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid,
+              show: style.upper.visible
+            },
+            mid: {
+              color: style.basic.color,
+              size: style.basic.lineWidth,
+              style: style.basic.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid,
+              show: style.basic.visible
+            },
+            dn: {
+              color: style.lower.color,
+              size: style.lower.lineWidth,
+              style: style.lower.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid,
+              show: style.lower.visible
+            }
           }
         });
       }
-
     } catch (error) {
       console.error('Error adding Bollinger Bands indicator:', error);
     }
-
   }, [showBollinger, settings, style]);
 
-  const handleAddIndicator = () => {
-    setShowBollinger(true);
-  };
-
-  const handleShowSettings = () => {
-    setShowSettings(true);
-  };
-
-  const handleSettingsChange = (newSettings: BollingerBandsSettings) => {
-    setSettings(newSettings);
-  };
-
-  const handleStyleChange = (newStyle: BollingerBandsStyle) => {
-    setStyle(newStyle);
-  };
+  const handleAddIndicator = () => setShowBollinger(true);
+  const handleShowSettings = () => setShowSettings(true);
+  const handleSettingsChange = (newSettings: BollingerBandsSettings) => setSettings(newSettings);
+  const handleStyleChange = (newStyle: BollingerBandsStyle) => setStyle(newStyle);
 
   return (
     <div className="w-full h-full relative">
