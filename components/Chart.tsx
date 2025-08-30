@@ -60,7 +60,6 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
 
     chartInstance.current = init(chartRef.current, {
       candle: {
-        // FIXED: This property must be lowercase.
         type: 'candle_solid',
         bar: {
           upColor: '#26a69a',
@@ -73,7 +72,6 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           custom: [
             {
               title: 'Bollinger Bands',
-              // FIXED: Replaced 'any' with a specific type for better type safety.
               format: (data: { kLineData: OHLCV; dataIndex: number }) => {
                 if (!showBollinger || !bollingerData.length) return '';
                 
@@ -107,8 +105,7 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           show: true,
           line: {
             show: true,
-            // FIXED: 'dashed' must be uppercase.
-            style: 'DASHED',
+            style: LineType.Dashed, // Fixed: Changed from 'DASHED'
             dashedValue: [4, 2],
             size: 1,
             color: '#EDEDED'
@@ -118,8 +115,7 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           show: true,
           line: {
             show: true,
-            // FIXED: 'dashed' must be uppercase.
-            style: 'DASHED',
+            style: LineType.Dashed, // Fixed: Changed from 'DASHED'
             dashedValue: [4, 2],
             size: 1,
             color: '#EDEDED'
@@ -133,13 +129,13 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
             show: true,
             size: 1,
             color: '#393939',
-            style: 'SOLID'
+            style: LineType.Solid // Fixed: Changed from 'SOLID'
           },
           vertical: {
             show: true,
             size: 1,
             color: '#393939',
-            style: 'SOLID'
+            style: LineType.Solid // Fixed: Changed from 'SOLID'
           }
         }
       }
@@ -183,8 +179,6 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     updateBollingerBands();
   }, [updateBollingerBands]);
 
-
-
   // Update chart with Bollinger Bands overlay
   useEffect(() => {
     if (!chartInstance.current) return;
@@ -213,20 +207,19 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
             up: {
               color: style.upper.color,
               size: style.upper.lineWidth,
-              // FIXED: Output must be uppercase 'DASHED' or 'SOLID' for the library.
-              style: (style.upper.lineStyle === 'dashed' ? 'DASHED' : 'SOLID') as LineType,
+              style: (style.upper.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid),
               show: style.upper.visible
             },
             mid: {
               color: style.basic.color,
               size: style.basic.lineWidth,
-              style: (style.basic.lineStyle === 'dashed' ? 'DASHED' : 'SOLID') as LineType,
+              style: (style.basic.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid),
               show: style.basic.visible
             },
             dn: {
               color: style.lower.color,
               size: style.lower.lineWidth,
-              style: (style.lower.lineStyle === 'dashed' ? 'DASHED' : 'SOLID') as LineType,
+              style: (style.lower.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid),
               show: style.lower.visible
             }
           }
