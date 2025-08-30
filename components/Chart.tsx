@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { init, dispose, Chart as KChart, LineType, CandleType } from 'klinecharts';
+import { init, dispose, Chart as KChart } from 'klinecharts';
 import { TrendingUp, Settings2 } from 'lucide-react';
 import { BollingerSettings } from './BollingerSettings';
 import { computeBollingerBands } from '@/lib/indicators/bollinger';
@@ -59,84 +59,150 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     if (!chartRef.current) return;
 
     chartInstance.current = init(chartRef.current, {
-      candle: {
-        type: CandleType.CandleSolid, // Fixed: Use enum instead of string
-        bar: {
-          upColor: '#26a69a',
-          downColor: '#ef5350',
-          noChangeColor: '#888888'
-        },
-        tooltip: {
-          showRule: 'always',
-          showType: 'standard',
-          custom: [
-            {
-              title: 'Bollinger Bands',
-              format: (data: { kLineData: OHLCV; dataIndex: number }) => {
-                if (!showBollinger || !bollingerData.length) return '';
-                
-                const index = data.dataIndex;
-                if (index >= 0 && index < bollingerData.length) {
-                  const bb = bollingerData[index];
-                  if (bb && !isNaN(bb.basis) && !isNaN(bb.upper) && !isNaN(bb.lower)) {
-                    return [
-                      { title: 'Upper', value: bb.upper.toFixed(2) },
-                      { title: 'Basis', value: bb.basis.toFixed(2) },
-                      { title: 'Lower', value: bb.lower.toFixed(2) }
-                    ];
-                  }
-                }
-                return [];
-              }
-            }
-          ]
-        }
-      },
-      xAxis: {
-        type: 'time'
-      },
-      yAxis: {
-        type: 'normal',
-        position: 'right'
-      },
-      crosshair: {
-        show: true,
-        horizontal: {
-          show: true,
-          line: {
-            show: true,
-            style: LineType.Dashed,
-            dashedValue: [4, 2],
-            size: 1,
-            color: '#EDEDED'
-          }
-        },
-        vertical: {
-          show: true,
-          line: {
-            show: true,
-            style: LineType.Dashed,
-            dashedValue: [4, 2],
-            size: 1,
-            color: '#EDEDED'
-          }
-        }
-      },
       styles: {
+        candle: {
+          type: 'candle_solid',
+          bar: {
+            upColor: '#26a69a',
+            downColor: '#ef5350',
+            noChangeColor: '#888888'
+          },
+          area: {
+            lineSize: 2,
+            value: 'close'
+          },
+          priceMark: {
+            show: true,
+            high: {
+              show: true,
+              color: '#D9D9D9',
+              textMargin: 5
+            },
+            low: {
+              show: true,
+              color: '#D9D9D9',
+              textMargin: 5
+            }
+          },
+          tooltip: {
+            showRule: 'always',
+            showType: 'standard',
+            labels: ['Time', 'Open', 'High', 'Low', 'Close', 'Volume'],
+            values: null
+          }
+        },
         grid: {
           show: true,
           horizontal: {
             show: true,
             size: 1,
             color: '#393939',
-            style: LineType.Solid
+            style: 'solid'
           },
           vertical: {
             show: true,
             size: 1,
             color: '#393939',
-            style: LineType.Solid
+            style: 'solid'
           }
+        },
+        xAxis: {
+          show: true,
+          size: 'auto',
+          axisLine: {
+            show: true,
+            color: '#888888',
+            size: 1
+          },
+          tickText: {
+            show: true,
+            color: '#D9D9D9',
+            size: 12
+          },
+          tickLine: {
+            show: true,
+            size: 1,
+            length: 3,
+            color: '#888888'
+          }
+        },
+        yAxis: {
+          show: true,
+          size: 'auto',
+          position: 'right',
+          type: 'normal',
+          axisLine: {
+            show: true,
+            color: '#888888',
+            size: 1
+          },
+          tickText: {
+            show: true,
+            color: '#D9D9D9',
+            size: 12
+          },
+          tickLine: {
+            show: true,
+            size: 1,
+            length: 3,
+            color: '#888888'
+          }
+        },
+        crosshair: {
+          show: true,
+          horizontal: {
+            show: true,
+            line: {
+              show: true,
+              style: 'dashed',
+              dashValue: [4, 2],
+              size: 1,
+              color: '#888888'
+            },
+            text: {
+              show: true,
+              color: '#D9D9D9',
+              size: 12,
+              paddingLeft: 2,
+              paddingRight: 2,
+              paddingTop: 2,
+              paddingBottom: 2,
+              borderSize: 1,
+              borderColor: '#505050',
+              backgroundColor: '#505050'
+            }
+          },
+          vertical: {
+            show: true,
+            line: {
+              show: true,
+              style: 'dashed',
+              dashValue: [4, 2],
+              size: 1,
+              color: '#888888'
+            },
+            text: {
+              show: true,
+              color: '#D9D9D9',
+              size: 12,
+              paddingLeft: 2,
+              paddingRight: 2,
+              paddingTop: 2,
+              paddingBottom: 2,
+              borderSize: 1,
+              borderColor: '#505050',
+              backgroundColor: '#505050'
+            }
+          }
+        }
+      },
+      customApi: {
+        formatDate: (dateTimeFormat: any, timestamp: number, format: string, type: string) => {
+          const date = new Date(timestamp);
+          if (type === 'time') {
+            return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+          }
+          return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
         }
       }
     });
@@ -186,13 +252,21 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     if (!showBollinger) {
       try {
         chartInstance.current.removeIndicator('BOLL');
-      } catch (e) { /* Indicator might not exist, that's okay */ }
+      } catch (e) { 
+        // Indicator might not exist, that's okay
+      }
       return;
     }
 
     try {
-      chartInstance.current.removeIndicator('BOLL');
+      // Remove existing indicator if present
+      try {
+        chartInstance.current.removeIndicator('BOLL');
+      } catch (e) {
+        // Indicator might not exist
+      }
       
+      // Create the Bollinger Bands indicator
       const indicatorId = chartInstance.current.createIndicator(
         'BOLL', 
         true,
@@ -200,28 +274,34 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
       );
 
       if (indicatorId) {
+        // Override indicator styles
         chartInstance.current.overrideIndicator({
           name: 'BOLL',
           calcParams: [settings.length, settings.stdDevMultiplier],
           styles: {
-            up: {
-              color: style.upper.color,
-              size: style.upper.lineWidth,
-              style: (style.upper.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid),
-              show: style.upper.visible
-            },
-            mid: {
-              color: style.basic.color,
-              size: style.basic.lineWidth,
-              style: (style.basic.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid),
-              show: style.basic.visible
-            },
-            dn: {
-              color: style.lower.color,
-              size: style.lower.lineWidth,
-              style: (style.lower.lineStyle === 'dashed' ? LineType.Dashed : LineType.Solid),
-              show: style.lower.visible
-            }
+            lines: [
+              {
+                color: style.upper.color,
+                size: style.upper.lineWidth,
+                style: style.upper.lineStyle === 'dashed' ? 'dashed' : 'solid',
+                show: style.upper.visible,
+                dashValue: style.upper.lineStyle === 'dashed' ? [4, 4] : [0, 0]
+              },
+              {
+                color: style.basic.color,
+                size: style.basic.lineWidth,
+                style: style.basic.lineStyle === 'dashed' ? 'dashed' : 'solid',
+                show: style.basic.visible,
+                dashValue: style.basic.lineStyle === 'dashed' ? [4, 4] : [0, 0]
+              },
+              {
+                color: style.lower.color,
+                size: style.lower.lineWidth,
+                style: style.lower.lineStyle === 'dashed' ? 'dashed' : 'solid',
+                show: style.lower.visible,
+                dashValue: style.lower.lineStyle === 'dashed' ? [4, 4] : [0, 0]
+              }
+            ]
           }
         });
       }
