@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { init, dispose, Chart as KChart } from 'klinecharts';
+import { init, dispose, Chart as KChart, LineType } from 'klinecharts';
 import { TrendingUp, Settings2 } from 'lucide-react';
 import { BollingerSettings } from './BollingerSettings';
 import { computeBollingerBands } from '@/lib/indicators/bollinger';
@@ -59,8 +59,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     if (!chartRef.current) return;
 
     chartInstance.current = init(chartRef.current, {
-      // NOTE: The incorrect top-level 'grid' object has been removed.
       candle: {
+        // FIXED: This property must be lowercase.
         type: 'candle_solid',
         bar: {
           upColor: '#26a69a',
@@ -73,13 +73,14 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           custom: [
             {
               title: 'Bollinger Bands',
-              format: (data: any) => {
+              // FIXED: Replaced 'any' with a specific type for better type safety.
+              format: (data: { kLineData: OHLCV; dataIndex: number }) => {
                 if (!showBollinger || !bollingerData.length) return '';
                 
                 const index = data.dataIndex;
                 if (index >= 0 && index < bollingerData.length) {
                   const bb = bollingerData[index];
-                  if (!isNaN(bb.basis) && !isNaN(bb.upper) && !isNaN(bb.lower)) {
+                  if (bb && !isNaN(bb.basis) && !isNaN(bb.upper) && !isNaN(bb.lower)) {
                     return [
                       { title: 'Upper', value: bb.upper.toFixed(2) },
                       { title: 'Basis', value: bb.basis.toFixed(2) },
@@ -106,7 +107,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           show: true,
           line: {
             show: true,
-            style: 'dashed',
+            // FIXED: 'dashed' must be uppercase.
+            style: 'DASHED',
             dashedValue: [4, 2],
             size: 1,
             color: '#EDEDED'
@@ -116,28 +118,28 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
           show: true,
           line: {
             show: true,
-            style: 'dashed',
+            // FIXED: 'dashed' must be uppercase.
+            style: 'DASHED',
             dashedValue: [4, 2],
             size: 1,
             color: '#EDEDED'
           }
         }
       },
-      // FIXED: All grid settings are now correctly placed inside the 'styles' object.
       styles: {
         grid: {
           show: true,
           horizontal: {
             show: true,
             size: 1,
-            color: '#393939', // Merged color
-            style: 'solid'
+            color: '#393939',
+            style: 'SOLID'
           },
           vertical: {
             show: true,
             size: 1,
-            color: '#393939', // Merged color
-            style: 'solid'
+            color: '#393939',
+            style: 'SOLID'
           }
         }
       }
@@ -188,29 +190,21 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
     if (!chartInstance.current) return;
 
     if (!showBollinger) {
-      // Remove indicator if hidden
       try {
         chartInstance.current.removeIndicator('BOLL');
-      } catch (e) {
-        // Indicator might not exist, that's okay
-      }
+      } catch (e) { /* Indicator might not exist, that's okay */ }
       return;
     }
 
     try {
-      // Remove existing indicator first
       chartInstance.current.removeIndicator('BOLL');
       
-      // Use the built-in BOLL indicator with custom parameters
       const indicatorId = chartInstance.current.createIndicator(
         'BOLL', 
-        true, // isStack - overlay on main chart
-        {
-          id: 'candle_pane' // Overlay on candlestick pane
-        }
+        true,
+        { id: 'candle_pane' }
       );
 
-      // Update indicator styles after creation
       if (indicatorId) {
         chartInstance.current.overrideIndicator({
           name: 'BOLL',
@@ -219,19 +213,20 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
             up: {
               color: style.upper.color,
               size: style.upper.lineWidth,
-              style: style.upper.lineStyle === 'dashed' ? 'dashed' : 'solid',
+              // FIXED: Output must be uppercase 'DASHED' or 'SOLID' for the library.
+              style: (style.upper.lineStyle === 'dashed' ? 'DASHED' : 'SOLID') as LineType,
               show: style.upper.visible
             },
             mid: {
               color: style.basic.color,
               size: style.basic.lineWidth,
-              style: style.basic.lineStyle === 'dashed' ? 'dashed' : 'solid',
+              style: (style.basic.lineStyle === 'dashed' ? 'DASHED' : 'SOLID') as LineType,
               show: style.basic.visible
             },
             dn: {
               color: style.lower.color,
               size: style.lower.lineWidth,
-              style: style.lower.lineStyle === 'dashed' ? 'dashed' : 'solid',
+              style: (style.lower.lineStyle === 'dashed' ? 'DASHED' : 'SOLID') as LineType,
               show: style.lower.visible
             }
           }
@@ -240,7 +235,6 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
 
     } catch (error) {
       console.error('Error adding Bollinger Bands indicator:', error);
-      console.log('Available methods:', Object.getOwnPropertyNames(chartInstance.current));
     }
 
   }, [showBollinger, settings, style]);
