@@ -59,11 +59,12 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
                         low: { show: true, color: '#D9D9D9'}
                     },
                     tooltip: {
-                        showRule: 'always',
+                        showRule: TooltipShowRule.Always,
                         showType: 'standard',
                         labels: ['Time', 'Open', 'High', 'Low', 'Close', 'Volume'],
                         values: null
                     }
+
                 },
                 grid: {
                     show: true,
