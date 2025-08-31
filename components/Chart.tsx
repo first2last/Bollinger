@@ -55,8 +55,8 @@ export const Chart: React.FC<ChartProps> = ({ data }) => {
                     },
                     priceMark: {
                         show: true,
-                        high: { show: true, color: '#D9D9D9', textMargin: 5 },
-                        low: { show: true, color: '#D9D9D9', textMargin: 5 }
+                        high: { show: true, color: '#D9D9D9'},
+                        low: { show: true, color: '#D9D9D9'}
                     },
                     tooltip: {
                         showRule: 'always',
